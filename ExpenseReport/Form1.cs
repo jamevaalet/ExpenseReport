@@ -16,17 +16,12 @@ namespace ExpenseReport
 {
     public partial class Form1 : Form
     {
+        string filename;
         DataTable tbSource;
-
-
-
         List<Transaction> Transactions = new List<Transaction>();
+      
 
-        //public Dictionary<string, string> CategoryMap = new Dictionary<string, string>();
-
-        
-
-        Configuration configFile = ConfigurationManager.OpenExeConfiguration(@"C: \Users\jamevaa\Documents\Visual Studio 2015\Projects\ExpenseReport\ExpenseReport\configuration.config");
+        Configuration configFile = ConfigurationManager.OpenExeConfiguration(@"c:\users\jamev\source\repos\expensereport\expensereport\configuration.config");
         KeyValueConfigurationCollection appSettings;//= configFile.AppSettings.Settings;
 
         public Form1()
@@ -41,7 +36,7 @@ namespace ExpenseReport
             {
                 filename = @"C:\Users\jamevaa\Desktop\firsttech\ExportedTransactions.csv";
             }
-
+            this.filename = filename;
             OleDbConnection conn = new OleDbConnection
                   ("Provider=Microsoft.Jet.OleDb.4.0; Data Source = " +
                     Path.GetDirectoryName(filename) +
@@ -56,10 +51,10 @@ namespace ExpenseReport
             tbSource = ds.Tables[0];
 
             conn.Close();
-            initializeCategories();
-            initializeTransactions();
-        }
 
+            initializeTransactions();
+
+        }
 
         private void InitializeCategory()
         {
@@ -74,18 +69,6 @@ namespace ExpenseReport
             }
         }
 
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
-
-
-
-        }
-        private void initializeCategories()
-        {
-
-        }
-
         private void initializeTransactions()
         {
            // Configuration configFile = ConfigurationManager.OpenExeConfiguration(@"C: \Users\jamevaa\Documents\Visual Studio 2015\Projects\ExpenseReport\ExpenseReport\configuration.config");
@@ -93,10 +76,10 @@ namespace ExpenseReport
 
             foreach (DataRow row in tbSource.Rows)
             {
-                if (appSettings[row["Memo"].ToString()]==null)
+                if (!appSettings.AllKeys.Contains(row["Memo"].ToString()))
                 {
 
-                    AddUpdateAppSettings(row["Memo"].ToString(), row["Memo"].ToString());
+                    AddUpdateAppSettings(row["Memo"].ToString(), "MISC");
                 }
                 var t = new Transaction()
                 {
@@ -108,32 +91,26 @@ namespace ExpenseReport
                 };
 
                 Transactions.Add(t);
+
+            //    var csv = Transaction.GetCSV(Transactions);
+
             }
-        }
 
-        private void button1_Click(object sender, EventArgs e)
-        {
+            var csv = Transaction.GetCSV(Transactions);
+            var f = $"{Path.GetDirectoryName(filename)}\\Edit.csv";
+            //File.Create(f);
+            
+            File.WriteAllText(f, csv);
+            
 
-        }
+            //List<string> values = new List<string>();
+            //foreach(var key in appSettings.AllKeys)
+            //{
+            //    if(appSettings[key].Value != "")
+            //    values.Add(appSettings[key].Value);
+            //}
 
-        private void ExpenseChart_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void expenseReportToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void tabPage1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void tabPage1_Click_1(object sender, EventArgs e)
-        {
-
+            //comboBox1.DataSource = values.Distinct().ToList();
         }
 
         private void button1_Click_1(object sender, EventArgs e)
@@ -158,16 +135,6 @@ namespace ExpenseReport
             ExpenseChart.Series["Transactions"].YValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.Auto;
         }
 
-        private void openFileDialog1_FileOk(object sender, CancelEventArgs e)
-        {
-
-        }
-
-        private void openFileDialog2_FileOk(object sender, CancelEventArgs e)
-        {
-
-        }
-
         private void button2_Click(object sender, EventArgs e)
         {
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
@@ -177,18 +144,13 @@ namespace ExpenseReport
 
         }
 
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
+   
         private void AddUpdateAppSettings(string key, string value)
         {
             try
             {
-                
                 var settings = configFile.AppSettings.Settings;
-                if (settings[key] == null)
+                if (!settings.AllKeys.Contains(key))
                 {
                     settings.Add(key, value);
                 }
@@ -229,16 +191,34 @@ namespace ExpenseReport
 
         private void button3_Click(object sender, EventArgs e)
         {
+            var key = memoLabel.Text;
+            var value = comboBox1.SelectedValue.ToString();
 
+            if(key != "Memo")
+            AddUpdateAppSettings(key, value);
+        }
 
+        private void button4_Click(object sender, EventArgs e)
+        {
             foreach (DataRow row in tbSource.Rows)
             {
-                if (appSettings[row["Memo"].ToString()] == null)
+                if (appSettings[row["Memo"].ToString()].Value == "")
                 {
                     memoLabel.Text = row["Memo"].ToString();
+                    return;
                 }
 
             }
+        }
+
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            var key = memoLabel.Text;
+            var value = textBox1.Text;
+
+            if (key != "Memo" && value != "New")
+                AddUpdateAppSettings(key, value);
         }
     }
 }

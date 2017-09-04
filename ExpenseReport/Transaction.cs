@@ -29,6 +29,23 @@ namespace ExpenseReport
         public String Type { get; set; }
         public DateTime Date { get; set; }
         
+        //public void initialize()
+        //{
+        //    if(this.Memo)
+        //}
 
+        public static string GetCSV(List<Transaction> tl)
+        {
+            string csv = "Month, Category, Amount"+Environment.NewLine;
+            tl.ForEach(x =>
+            {
+                var month = x.Date.Month + "/" + x.Date.Year;
+                x.Category= x.Category.Trim(new char[] { ',' });
+                var amount = x.Type == "Debit" ?x.Amount*-1 : x.Amount;
+                csv += $"{month}, {x.Category}, {amount}{Environment.NewLine}";
+            });
+
+            return csv;
+        }
     }
 }
